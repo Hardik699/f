@@ -4,9 +4,7 @@ let client: MongoClient | null = null;
 let db: Db | null = null;
 let connectionStatus = "disconnected";
 
-const MONGODB_URI =
-  process.env.MONGODB_URI ||
-  "mongodb+srv://Hardik:Hardik1@cluster0.ezeb8ew.mongodb.net/?appName=Cluster0";
+const MONGODB_URI = process.env.MONGODB_URI;
 
 export async function connectDB(): Promise<boolean> {
   if (db) {
@@ -14,6 +12,10 @@ export async function connectDB(): Promise<boolean> {
   }
 
   try {
+    if (!MONGODB_URI) {
+      console.error("❌ MONGODB_URI environment variable is not set. Aborting DB connect.");
+      return false;
+    }
     connectionStatus = "connecting";
     client = new MongoClient(MONGODB_URI);
     await client.connect();
