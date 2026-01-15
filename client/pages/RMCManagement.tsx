@@ -15,6 +15,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { Layout } from "@/components/Layout";
+import Modal from "@/components/ui/Modal";
 
 interface Unit {
   _id: string;
@@ -1695,8 +1696,13 @@ export default function RMCManagement() {
 
         {/* Comparison View Modal */}
         {showComparisonView && comparisonData.old && comparisonData.new && (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-3 sm:p-4 backdrop-blur-sm">
-            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto border border-slate-200/50 dark:border-slate-700/50">
+          <Modal
+            onClose={() => {
+              setShowComparisonView(false);
+              setComparisonData({ old: null, new: null });
+            }}
+            className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto border border-slate-200/50 dark:border-slate-700/50"
+          >
               <div className="p-4 sm:p-6 md:p-8 border-b-2 border-teal-100 dark:border-teal-900/50 flex items-center justify-between sticky top-0 bg-gradient-to-r from-white to-slate-50 dark:from-slate-800 dark:to-slate-800/50">
                 <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
                   Recipe Comparison
@@ -1965,8 +1971,7 @@ export default function RMCManagement() {
                   </button>
                 </div>
               </div>
-            </div>
-          </div>
+            </Modal>
         )}
       </div>
     </Layout>
