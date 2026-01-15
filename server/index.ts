@@ -55,6 +55,23 @@ import { connectDB } from "./db";
 export async function createServer() {
   const app = express();
 
+  // Wrap route registration methods to log failures and identify problematic paths
+  const _wrap = (method: keyof ReturnType<typeof express>) => {
+    // @ts-expect-error dynamic
+    const orig = (app as any)[method];
+    (app as any)[method] = function (path: any, ...handlers: any[]) {
+      try {
+        return orig.call(this, path, ...handlers);
+      } catch (err) {
+        console.error(`Route registration failed for method=${method} path=${String(path)}`);
+        console.error(err);
+        throw err;
+      }
+    };
+  };
+
+  ["get", "post", "put", "delete", "use"].forEach((m) => _wrap(m as any));
+
   // Middleware
   app.use(
     cors({
