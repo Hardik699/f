@@ -640,6 +640,17 @@ export default function RMCManagement() {
     });
   };
 
+  const formatUnit = (u?: string | null) => {
+    if (!u) return null;
+    const s = u.toLowerCase().trim();
+    if (s.includes("kg") || s.includes("kilogram")) return "kg";
+    if (s === "g" || s.includes("gram")) return "g";
+    if (s.includes("lit") || s === "l" || s.includes("ltr") || s.includes("litre")) return "L";
+    if (s.includes("ml")) return "ml";
+    if (s.includes("piece") || s.includes("pc") || s === "pcs") return "pcs";
+    return u;
+  };
+
   // Sync latest RM price and propagate to recipes
   const handleSyncRMPrice = async (rawMaterialId: string) => {
     if (!rawMaterialId) return;
@@ -1902,7 +1913,7 @@ export default function RMCManagement() {
                               {newItem.rawMaterialName}
                             </td>
                             <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
-                              ₹{oldItem.price.toFixed(2)}
+                              ₹{oldItem.price.toFixed(2)}{formatUnit(oldItem.unitName) ? ` / ${formatUnit(oldItem.unitName)}` : formatUnit(newItem.unitName) ? ` / ${formatUnit(newItem.unitName)}` : ""}
                             </td>
                             <td
                               className={`px-4 py-3 text-sm font-semibold ${
@@ -1913,7 +1924,7 @@ export default function RMCManagement() {
                                     : "text-slate-900 dark:text-white"
                               }`}
                             >
-                              ₹{newItem.price.toFixed(2)}
+                              ₹{newItem.price.toFixed(2)}{formatUnit(newItem.unitName) ? ` / ${formatUnit(newItem.unitName)}` : formatUnit(oldItem.unitName) ? ` / ${formatUnit(oldItem.unitName)}` : ""}
                             </td>
                             <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
                               ₹{oldItem.totalPrice.toFixed(2)}
