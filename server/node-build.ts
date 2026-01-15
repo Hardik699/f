@@ -15,8 +15,9 @@ async function startServer() {
   app.use(express.static(distPath));
 
   // Handle React Router - serve index.html for all non-API routes
-  app.get("/*", (req, res) => {
-    // Don't serve index.html for API routes
+  // Use a middleware fallback (no wildcard path) to avoid path-to-regexp parsing issues
+  app.use((req, res) => {
+    // Don't serve index.html for API or health routes
     if (req.path.startsWith("/api/") || req.path.startsWith("/health")) {
       return res.status(404).json({ error: "API endpoint not found" });
     }
