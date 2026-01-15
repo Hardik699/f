@@ -13,7 +13,18 @@ export default function Modal({ children, onClose, className = "" }: ModalProps)
       if (e.key === "Escape") onClose?.();
     };
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+
+    // Mark document as modal-open so layout can disable header blur
+    document.documentElement.classList.add("modal-open");
+    // Prevent body scroll
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.documentElement.classList.remove("modal-open");
+      document.body.style.overflow = prevOverflow || "";
+    };
   }, [onClose]);
 
   const modal = (

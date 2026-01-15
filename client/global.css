@@ -200,6 +200,13 @@
     @apply text-sm px-3 py-2;
   }
 
+  /* When a modal is open, disable the header backdrop blur to avoid visual artifacts */
+  .modal-open .header-backdrop {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: transparent !important;
+  }
+
   /* Pill variant */
   .btn-pill {
     @apply rounded-full whitespace-nowrap;
