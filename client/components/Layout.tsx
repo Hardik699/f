@@ -23,7 +23,7 @@ export function Layout({ children, title }: LayoutProps) {
       <Sidebar />
 
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-40 bg-transparent backdrop-blur-sm header-backdrop">
+      <header className="fixed top-0 left-0 right-0 z-40 bg-transparent header-backdrop">
         <div className="h-16 sm:h-20 md:ml-64 px-4 sm:px-6 flex items-center justify-end gap-2 sm:gap-4">
           <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
             <DBStatusIndicator />
