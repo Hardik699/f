@@ -1,0 +1,266 @@
+/** @import must precede all other statements */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /**
+   * Tailwind CSS theme - Modern White Enterprise Theme
+   * tailwind.config.ts expects the following color variables to be expressed as HSL values.
+   * A different format will require also updating the theme in tailwind.config.ts.
+  */
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 20%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 20%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 20%;
+
+    --primary: 174 83% 44%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 10% 95%;
+    --secondary-foreground: 240 10% 20%;
+
+    --muted: 240 10% 90%;
+    --muted-foreground: 240 10% 45%;
+
+    --accent: 174 83% 44%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 10% 92%;
+    --input: 0 0% 100%;
+    --ring: 174 83% 44%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 240 10% 20%;
+    --sidebar-primary: 220 90% 56%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 10% 95%;
+    --sidebar-accent-foreground: 240 10% 20%;
+    --sidebar-border: 240 10% 92%;
+    --sidebar-ring: 220 90% 56%;
+
+    /* Custom shadows for modern look */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md:
+      0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg:
+      0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl:
+      0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+    /* Animation durations */
+    --duration-fast: 150ms;
+    --duration-normal: 300ms;
+    --duration-slow: 500ms;
+  }
+
+  .dark {
+    --background: 240 10% 10%;
+    --foreground: 0 0% 95%;
+
+    --card: 240 10% 15%;
+    --card-foreground: 0 0% 95%;
+
+    --popover: 240 10% 15%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 174 83% 44%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 10% 25%;
+    --secondary-foreground: 0 0% 95%;
+
+    --muted: 240 10% 30%;
+    --muted-foreground: 240 10% 70%;
+
+    --accent: 174 83% 44%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 10% 20%;
+    --input: 240 10% 20%;
+    --ring: 174 83% 44%;
+
+    --sidebar-background: 240 10% 12%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 220 90% 56%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 10% 25%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 240 10% 20%;
+    --sidebar-ring: 220 90% 56%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Inter", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  :where(p, span, li, h1, h2, h3, h4, h5, h6, a, button, label, td, th) {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  pre,
+  code {
+    overflow-x: auto;
+    white-space: pre;
+    font-family: "Fira Code", monospace;
+  }
+
+  /* Smooth transitions */
+  button,
+  a,
+  input,
+  textarea,
+  select {
+    @apply transition-all duration-200;
+  }
+
+  /* Input styling */
+  input,
+  textarea,
+  select {
+    @apply bg-input border border-border rounded-md;
+  }
+
+  /* Buttons, cards, table and common UI utilities */
+  .card {
+    @apply bg-card rounded-2xl p-6 shadow-lg dark:shadow-xl dark:shadow-black/20;
+    transition: all var(--duration-normal) ease;
+    border: 1px solid hsl(var(--border));
+  }
+
+  .card:hover {
+    @apply shadow-xl dark:shadow-2xl;
+    transform: translateY(-2px);
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200;
+  }
+
+  .btn-primary {
+    @apply bg-gradient-to-r from-teal-600 to-teal-700 text-white hover:shadow-lg hover:shadow-teal-500/30 hover:-translate-y-0.5;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent border border-transparent hover:bg-muted;
+  }
+
+  .btn-danger {
+    @apply bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 border border-red-200 dark:border-red-800;
+  }
+
+  .btn-soft {
+    @apply bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all;
+  }
+
+  /* Icon-only button useful for mobile compact actions */
+  .btn-icon {
+    @apply p-2.5 rounded-xl inline-flex items-center justify-center transition-all hover:bg-slate-100 dark:hover:bg-slate-700;
+  }
+
+  .btn-icon:hover {
+    @apply shadow-md;
+  }
+
+  .btn-icon:focus {
+    @apply outline-none ring-2 ring-offset-2 ring-teal-500;
+  }
+
+  /* Small button variant */
+  .btn-sm {
+    @apply text-sm px-3 py-2;
+  }
+
+  /* Pill variant */
+  .btn-pill {
+    @apply rounded-full whitespace-nowrap;
+    /* Ensure pill buttons have enough width for short labels and don't wrap */
+    min-width: 88px;
+  }
+
+  /* Action group for consistent spacing */
+  .action-group {
+    @apply flex items-center gap-2 flex-wrap;
+  }
+
+  /* Non-wrapping variant used where actions must stay on a single line */
+  .action-group-nowrap {
+    @apply flex items-center gap-2 flex-nowrap;
+  }
+
+  .action-group-right {
+    @apply flex items-center;
+  }
+
+  /* On very small screens, show icon-only versions by hiding labels; labels are visible from sm and up */
+  .action-label {
+    @apply hidden sm:inline text-sm whitespace-nowrap;
+  }
+
+  /* Compact table density */
+  .table-dense th,
+  .table-dense td {
+    @apply px-4 py-3;
+  }
+  .table-responsive {
+    @apply overflow-x-auto rounded-lg;
+  }
+
+  .row-hover {
+    transition:
+      transform var(--duration-fast),
+      box-shadow var(--duration-fast),
+      background-color var(--duration-fast);
+  }
+
+  .row-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+    background-color: rgba(0, 0, 0, 0.02);
+  }
+
+  /* Simple fade-in animation */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .fade-in-up {
+    animation: fadeInUp var(--duration-normal) ease both;
+  }
+}
