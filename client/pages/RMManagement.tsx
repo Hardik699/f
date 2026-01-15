@@ -634,6 +634,17 @@ export default function RMManagement() {
     });
   };
 
+  const formatUnit = (u?: string | null) => {
+    if (!u) return null;
+    const s = u.toLowerCase().trim();
+    if (s.includes("kg") || s.includes("kilogram")) return "kg";
+    if (s === "g" || s.includes("gram")) return "g";
+    if (s.includes("lit") || s === "l" || s.includes("ltr") || s.includes("litre")) return "L";
+    if (s.includes("ml")) return "ml";
+    if (s.includes("piece") || s.includes("pc") || s === "pcs") return "pcs";
+    return u; // fallback to original
+  };
+
   return (
     <Layout title="RM Management">
       <div className="space-y-6">
@@ -847,7 +858,7 @@ export default function RMManagement() {
                             <div>
                               <div className="font-semibold text-slate-900 dark:text-white">
                                 ₹{rm.lastAddedPrice.toFixed(2)}
-                                {rm.unitName ? ` / ${rm.unitName}` : ""}
+                                {formatUnit(rm.unitName) ? ` / ${formatUnit(rm.unitName)}` : ""}
                               </div>
                               <div className="text-xs text-slate-500 dark:text-slate-400">
                                 {rm.lastVendorName}
@@ -1393,7 +1404,7 @@ export default function RMManagement() {
                           </td>
                           <td className="px-6 py-4 text-sm font-semibold text-teal-600 dark:text-teal-400">
                               {typeof vp.price === "number"
-                                ? `₹${vp.price.toFixed(2)}${vp.unitName ? ` / ${vp.unitName}` : selectedRMForPrices?.unitName ? ` / ${selectedRMForPrices.unitName}` : ""}`
+                                ? `₹${vp.price.toFixed(2)}${formatUnit(vp.unitName) ? ` / ${formatUnit(vp.unitName)}` : formatUnit(selectedRMForPrices?.unitName) ? ` / ${formatUnit(selectedRMForPrices?.unitName)}` : ""}`
                                 : "-"}
                           </td>
                           <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
@@ -1473,10 +1484,10 @@ export default function RMManagement() {
                               {log.vendorName}
                             </td>
                             <td className="px-4 py-4 text-sm text-slate-600 dark:text-slate-400">
-                              ₹{log.oldPrice.toFixed(2)}{log.unitName ? ` / ${log.unitName}` : selectedRMForLogs?.unitName ? ` / ${selectedRMForLogs.unitName}` : ""}
+                              ₹{log.oldPrice.toFixed(2)}{formatUnit(log.unitName) ? ` / ${formatUnit(log.unitName)}` : formatUnit(selectedRMForLogs?.unitName) ? ` / ${formatUnit(selectedRMForLogs?.unitName)}` : ""}
                             </td>
                             <td className="px-4 py-4 text-sm font-semibold text-green-600 dark:text-green-400">
-                              ₹{log.newPrice.toFixed(2)}{log.unitName ? ` / ${log.unitName}` : selectedRMForLogs?.unitName ? ` / ${selectedRMForLogs.unitName}` : ""}
+                              ₹{log.newPrice.toFixed(2)}{formatUnit(log.unitName) ? ` / ${formatUnit(log.unitName)}` : formatUnit(selectedRMForLogs?.unitName) ? ` / ${formatUnit(selectedRMForLogs?.unitName)}` : ""}
                             </td>
                             <td className="px-4 py-4 text-sm text-slate-600 dark:text-slate-400">
                               {formatDate(log.changeDate)}
