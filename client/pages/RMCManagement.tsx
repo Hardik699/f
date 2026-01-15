@@ -99,6 +99,8 @@ interface RecipeHistory {
 interface RecipeLog {
   _id: string;
   recipeId: string;
+  recipeItemId?: string;
+  rawMaterialId?: string;
   fieldChanged: string;
   oldValue: any;
   newValue: any;
@@ -748,7 +750,7 @@ export default function RMCManagement() {
   const totals = calculateRecipeTotals();
 
   return (
-    <Layout title="">
+    <Layout title="" hideHeader>
       <div className="space-y-8">
         {/* Header with Add Recipe Button */}
         <div className="flex items-center justify-between gap-2">
@@ -1682,22 +1684,33 @@ export default function RMCManagement() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {recipeLogs.map((log) => (
-                      <div key={log._id} className="p-4 border rounded-lg">
-                        <div className="text-sm text-slate-600">
-                          {new Date(
-                            (log as any).changeDate || "",
-                          ).toLocaleString()}
+                    {recipeLogs.map((log) => {
+                      const rm = rawMaterials.find(
+                        (r) => r._id === (log as any).rawMaterialId,
+                      );
+
+                      return (
+                        <div key={log._id} className="p-4 border rounded-lg">
+                          <div className="text-sm text-slate-600">
+                            {formatDate((log as any).changeDate || "")}
+                          </div>
+
+                          {rm ? (
+                            <div className="text-sm font-medium text-slate-700">
+                              Item: {rm.code} - {rm.name}
+                            </div>
+                          ) : null}
+
+                          <div className="font-semibold">{log.fieldChanged}</div>
+                          <div className="text-sm text-slate-700">
+                            Old: {JSON.stringify(log.oldValue)}
+                          </div>
+                          <div className="text-sm text-slate-700">
+                            New: {JSON.stringify(log.newValue)}
+                          </div>
                         </div>
-                        <div className="font-semibold">{log.fieldChanged}</div>
-                        <div className="text-sm text-slate-700">
-                          Old: {JSON.stringify(log.oldValue)}
-                        </div>
-                        <div className="text-sm text-slate-700">
-                          New: {JSON.stringify(log.newValue)}
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
