@@ -49,9 +49,9 @@ async function initializeCollections() {
       await db.createCollection("users");
       // Create a default admin user
       await db.collection("users").insertOne({
-        username: "admin",
-        password: "admin@", // In production, this should be hashed
-        email: "admin@faction.local",
+        username: "Hanuram",
+        password: "HAnuram@214#", // In production, this should be hashed
+        email: "hanuram@faction.local",
         createdAt: new Date(),
         role: "admin",
       });

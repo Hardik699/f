@@ -212,7 +212,7 @@ export default function Login() {
 
         {/* Footer info */}
         <div className="text-center text-xs text-slate-600 dark:text-slate-400">
-          <p>Demo credentials: admin / admin@</p>
+          <p>Demo credentials: Hanuram / HAnuram@214#</p>
         </div>
       </div>
     </div>
