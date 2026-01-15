@@ -847,6 +847,7 @@ export default function RMManagement() {
                             <div>
                               <div className="font-semibold text-slate-900 dark:text-white">
                                 ₹{rm.lastAddedPrice.toFixed(2)}
+                                {rm.unitName ? ` / ${rm.unitName}` : ""}
                               </div>
                               <div className="text-xs text-slate-500 dark:text-slate-400">
                                 {rm.lastVendorName}
@@ -1391,9 +1392,9 @@ export default function RMManagement() {
                             {vp.vendorName}
                           </td>
                           <td className="px-6 py-4 text-sm font-semibold text-teal-600 dark:text-teal-400">
-                            {typeof vp.price === "number"
-                              ? `₹${vp.price.toFixed(2)}`
-                              : "-"}
+                              {typeof vp.price === "number"
+                                ? `₹${vp.price.toFixed(2)}${vp.unitName ? ` / ${vp.unitName}` : selectedRMForPrices?.unitName ? ` / ${selectedRMForPrices.unitName}` : ""}`
+                                : "-"}
                           </td>
                           <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
                             {vp.quantity ?? "-"}
@@ -1472,10 +1473,10 @@ export default function RMManagement() {
                               {log.vendorName}
                             </td>
                             <td className="px-4 py-4 text-sm text-slate-600 dark:text-slate-400">
-                              ₹{log.oldPrice.toFixed(2)}
+                              ₹{log.oldPrice.toFixed(2)}{log.unitName ? ` / ${log.unitName}` : selectedRMForLogs?.unitName ? ` / ${selectedRMForLogs.unitName}` : ""}
                             </td>
                             <td className="px-4 py-4 text-sm font-semibold text-green-600 dark:text-green-400">
-                              ₹{log.newPrice.toFixed(2)}
+                              ₹{log.newPrice.toFixed(2)}{log.unitName ? ` / ${log.unitName}` : selectedRMForLogs?.unitName ? ` / ${selectedRMForLogs.unitName}` : ""}
                             </td>
                             <td className="px-4 py-4 text-sm text-slate-600 dark:text-slate-400">
                               {formatDate(log.changeDate)}
