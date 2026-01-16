@@ -143,6 +143,18 @@
     @apply transition-all duration-200;
   }
 
+  /* Header backdrop with safe-area support */
+  .header-backdrop {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .dark .header-backdrop {
+    background: rgba(15, 23, 42, 0.6);
+  }
+
   /* Input styling */
   input,
   textarea,
@@ -228,6 +240,10 @@
     @apply flex items-center;
   }
 
+  /* Responsive form action grouping: stack on mobile, inline on sm+ */
+  .form-actions {
+    @apply flex flex-col sm:flex-row gap-3;
+  }
   /* On very small screens, show icon-only versions by hiding labels; labels are visible from sm and up */
   .action-label {
     @apply hidden sm:inline text-sm whitespace-nowrap;

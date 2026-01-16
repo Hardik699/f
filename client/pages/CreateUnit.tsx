@@ -252,7 +252,7 @@ export default function CreateUnit() {
             </div>
 
             {/* Buttons */}
-            <div className="flex gap-3 pt-4">
+            <div className="form-actions pt-4">
               <button
                 type="submit"
                 disabled={loading}
@@ -303,7 +303,7 @@ export default function CreateUnit() {
               No units found. Create one above!
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto table-responsive">
               <table className="w-full">
                 <thead className="bg-slate-100 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600">
                   <tr>

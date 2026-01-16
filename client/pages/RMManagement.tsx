@@ -794,7 +794,7 @@ export default function RMManagement() {
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto table-responsive">
               <table className="w-full">
                 <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
                   <tr>
@@ -1378,7 +1378,7 @@ export default function RMManagement() {
                   <p className="text-sm">No vendor prices found for this raw material.</p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto table-responsive">
                   <table className="w-full">
                     <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
                       <tr>
@@ -1453,7 +1453,7 @@ export default function RMManagement() {
                     <p className="text-sm">No price logs found for this raw material.</p>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto table-responsive">
                     <table className="w-full min-w-[800px]">
                       <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700 sticky top-0">
                         <tr>
