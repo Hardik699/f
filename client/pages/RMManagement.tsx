@@ -9,7 +9,6 @@ import {
   X,
   Eye,
   History,
-  TrendingUp,
 } from "lucide-react";
 import { Layout } from "@/components/Layout";
 
@@ -124,10 +123,7 @@ export default function RMManagement() {
     useState<RawMaterial | null>(null);
 
   // Costing modal state
-  const [showCostingModal, setShowCostingModal] = useState(false);
-  const [selectedRMForCosting, setSelectedRMForCosting] =
-    useState<RawMaterial | null>(null);
-  const [costingData, setCostingData] = useState<any[]>([]);
+  // (removed)
 
   // UI state
   const [loading, setLoading] = useState(false);
@@ -546,20 +542,7 @@ export default function RMManagement() {
     await fetchPriceLogs(rm._id);
   };
 
-  const handleViewCosting = async (rm: RawMaterial) => {
-    if (!rm || !rm._id) return;
-    setSelectedRMForCosting(rm);
-    setShowCostingModal(true);
-    try {
-      const response = await fetch(`/api/raw-materials/${rm._id}/costing`);
-      const data = await response.json();
-      if (data.success && Array.isArray(data.data)) setCostingData(data.data);
-      else setCostingData([]);
-    } catch (error) {
-      console.error("Error fetching RM costing:", error);
-      setCostingData([]);
-    }
-  };
+  // handleViewCosting removed
 
   const handleDeletePriceLog = async (logId: string) => {
     if (!selectedRMForLogs || !selectedRMForLogs._id) return;
@@ -963,7 +946,6 @@ export default function RMManagement() {
                           <div className="flex items-center justify-end gap-2">
                             <button onClick={() => { setSelectedRMForVendor(rm._id); setShowVendorPriceForm(true); }} className="p-2 hover:bg-green-100 dark:hover:bg-green-900/20 text-green-600 dark:text-green-400 rounded-lg transition-colors" title="Add Price" aria-label={`Add price for ${rm.name}`}><Plus className="w-4 h-4" /></button>
                             <button onClick={() => handleViewVendorPrices(rm)} className="p-2 hover:bg-blue-100 dark:hover:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg transition-colors" title="View Prices" aria-label={`View prices for ${rm.name}`}><Eye className="w-4 h-4" /></button>
-                            <button onClick={() => handleViewCosting(rm)} className="p-2 hover:bg-amber-100 dark:hover:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-lg transition-colors" title="Costing View" aria-label={`View costing for ${rm.name}`}><TrendingUp className="w-4 h-4" /></button>
                             <button onClick={() => handleViewPriceLogs(rm)} className="p-2 hover:bg-purple-100 dark:hover:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-lg transition-colors" title="View Logs" aria-label={`View logs for ${rm.name}`}><History className="w-4 h-4" /></button>
                             <button onClick={() => handleEditRM(rm)} className="p-2 hover:bg-sky-100 dark:hover:bg-sky-900/20 text-sky-600 dark:text-sky-400 rounded-lg transition-colors" title="Edit" aria-label={`Edit ${rm.name}`}><Edit2 className="w-4 h-4" /></button>
                             <button onClick={() => handleDeleteRM(rm._id)} className="p-2 hover:bg-red-100 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg transition-colors" title="Delete raw material" aria-label={`Delete ${rm.name}`}><Trash2 className="w-4 h-4" /></button>
@@ -1508,60 +1490,7 @@ export default function RMManagement() {
           </div>
         )}
 
-        {/* Costing Modal */}
-        {showCostingModal && selectedRMForCosting && (
-          <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur">
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl max-w-3xl w-full max-h-96 overflow-y-auto border border-slate-200 dark:border-slate-700">
-              <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between sticky top-0 bg-white dark:bg-slate-800 z-10">
-                <div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Costing View</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{selectedRMForCosting.code} - {selectedRMForCosting.name}</p>
-                </div>
-                <button
-                  onClick={() => {
-                    setShowCostingModal(false);
-                    setSelectedRMForCosting(null);
-                    setCostingData([]);
-                  }}
-                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {costingData.length === 0 ? (
-                <div className="p-12 text-center text-slate-500 dark:text-slate-400">
-                  <p className="text-sm">This raw material is not used in any recipes.</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto table-responsive">
-                  <table className="w-full">
-                    <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Recipe Code</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Recipe Name</th>
-                        <th className="px-6 py-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">RM Contribution</th>
-                        <th className="px-6 py-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Recipe Total RM Cost</th>
-                        <th className="px-6 py-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider">Price per Unit</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                      {costingData.map((c) => (
-                        <tr key={c.recipeId} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                          <td className="px-6 py-4 text-sm font-medium text-slate-900 dark:text-white">{c.recipeCode}</td>
-                          <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{c.recipeName}</td>
-                          <td className="px-6 py-4 text-sm font-semibold text-teal-600 dark:text-teal-400 text-right">₹{(c.rmContribution || 0).toFixed(2)}</td>
-                          <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400 text-right">₹{(c.totalRawMaterialCost || 0).toFixed(2)}</td>
-                          <td className="px-6 py-4 text-sm font-semibold text-green-600 dark:text-green-400 text-right">₹{(c.pricePerUnit || 0).toFixed(2)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+        {/* Costing Modal removed */}
 
         {/* Price Logs Modal */}
         {showPriceLogsModal && selectedRMForLogs && (
