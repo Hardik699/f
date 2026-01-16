@@ -746,11 +746,6 @@ export default function RMManagement() {
         
         {/* Upload / Download Toolbar */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                        <div className="flex items-center gap-1">
-                          <button onClick={() => handleEditRM(rm)} className="p-2 bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 rounded-md" title="Edit"><Edit2 className="w-4 h-4" /></button>
-                          <button onClick={() => handleDeleteRM(rm._id)} className="p-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-md" title="Delete"><Trash2 className="w-4 h-4" /></button>
-                        </div>
-
             <button
               onClick={async () => {
                 try {
