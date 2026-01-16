@@ -317,7 +317,7 @@ export const handleUploadRawMaterials: RequestHandler = (req, res, next) => {
         // find category & subcategory
         const category = await db.collection("categories").findOne({ name: categoryName });
         if (!category) {
-          results.skipped.push({ row: rowIndex, reason: `Category not found: ${categoryName}`, row });
+          results.skipped.push({ row: rowIndex, reason: `Category not found: ${categoryName}`, data: row });
           continue;
         }
 
@@ -325,8 +325,8 @@ export const handleUploadRawMaterials: RequestHandler = (req, res, next) => {
         // fallback: try only by name
         if (!subcategory) {
           const sub2 = await db.collection("subcategories").findOne({ name: subCategoryName });
-          if (!sub2) {
-            results.skipped.push({ row: rowIndex, reason: `SubCategory not found: ${subCategoryName}`, row });
+            if (!sub2) {
+            results.skipped.push({ row: rowIndex, reason: `SubCategory not found: ${subCategoryName}`, data: row });
             continue;
           }
         }
@@ -360,13 +360,13 @@ export const handleUploadRawMaterials: RequestHandler = (req, res, next) => {
               .updateOne({ _id: new ObjectId(id) }, { $set: updateData });
 
             if (matchedCount === 0) {
-              results.skipped.push({ row: rowIndex, reason: `ID not found: ${id}`, row });
+              results.skipped.push({ row: rowIndex, reason: `ID not found: ${id}`, data: row });
               continue;
             }
 
             results.updated += 1;
           } catch (err) {
-            results.skipped.push({ row: rowIndex, reason: `Update error: ${String(err)}`, row });
+            results.skipped.push({ row: rowIndex, reason: `Update error: ${String(err)}`, data: row });
           }
         } else {
           // create
@@ -390,7 +390,7 @@ export const handleUploadRawMaterials: RequestHandler = (req, res, next) => {
             await db.collection("raw_materials").insertOne(newRM);
             results.created += 1;
           } catch (err) {
-            results.skipped.push({ row: rowIndex, reason: `Create error: ${String(err)}`, row });
+            results.skipped.push({ row: rowIndex, reason: `Create error: ${String(err)}`, data: row });
           }
         }
       }
