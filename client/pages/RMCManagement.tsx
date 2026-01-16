@@ -166,6 +166,12 @@ export default function RMCManagement() {
     new: RecipeHistory | null;
   }>({ old: null, new: null });
 
+  // View recipe modal
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [selectedRecipeForView, setSelectedRecipeForView] =
+    useState<Recipe | null>(null);
+  const [viewRecipeItems, setViewRecipeItems] = useState<RecipeItem[]>([]);
+
   // Edit mode and Logs for recipes
   const [editingRecipeId, setEditingRecipeId] = useState<string | null>(null);
   const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
@@ -549,6 +555,18 @@ export default function RMCManagement() {
     }
   };
 
+  const handleViewRecipe = async (recipe: Recipe) => {
+    setSelectedRecipeForView(recipe);
+    setShowViewModal(true);
+    try {
+      const response = await fetch(`/api/recipes/${recipe._id}/items`);
+      const data = await response.json();
+      if (data.success) setViewRecipeItems(data.data);
+    } catch (error) {
+      console.error("Error fetching recipe items:", error);
+    }
+  };
+
   const handleCompareHistories = () => {
     if (selectedHistoryEntries.length !== 2) {
       setMessageType("error");
@@ -872,6 +890,13 @@ export default function RMCManagement() {
                         >
                           <Eye className="w-4 h-4" />
                           Logs
+                        </button>
+                        <button
+                          onClick={() => handleViewRecipe(recipe)}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors"
+                        >
+                          <Eye className="w-4 h-4" />
+                          View
                         </button>
                         <button
                           onClick={() => handleViewHistory(recipe)}
@@ -1652,6 +1677,103 @@ export default function RMCManagement() {
                     </div>
                   </>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* View Recipe Modal */}
+        {showViewModal && selectedRecipeForView && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-3 sm:p-4 backdrop-blur-sm">
+            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-slate-200/50 dark:border-slate-700/50">
+              <div className="p-4 sm:p-6 md:p-8 border-b-2 border-teal-100 dark:border-teal-900/50 flex items-center justify-between sticky top-0 bg-gradient-to-r from-white to-slate-50 dark:from-slate-800 dark:to-slate-800/50">
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white">
+                  Recipe Details - {selectedRecipeForView.code}
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowViewModal(false);
+                    setSelectedRecipeForView(null);
+                    setViewRecipeItems([]);
+                  }}
+                  className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-slate-600">Name</p>
+                    <p className="font-semibold text-slate-900">{selectedRecipeForView.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-600">Batch Size</p>
+                    <p className="font-semibold text-slate-900">{selectedRecipeForView.batchSize} {selectedRecipeForView.unitName}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-600">Yield</p>
+                    <p className="font-semibold text-slate-900">{selectedRecipeForView.yield ?? "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-600">Moisture %</p>
+                    <p className="font-semibold text-slate-900">{selectedRecipeForView.moisturePercentage ?? "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-600">Total RM Cost</p>
+                    <p className="font-semibold text-teal-600">₹{selectedRecipeForView.totalRawMaterialCost.toFixed(2)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-600">Price per Unit</p>
+                    <p className="font-semibold text-green-600">₹{selectedRecipeForView.pricePerUnit.toFixed(2)}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold mb-2">Recipe Items</h4>
+                  {viewRecipeItems.length === 0 ? (
+                    <p className="text-sm text-slate-500">No items found for this recipe.</p>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+                          <tr>
+                            <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600">Raw Material</th>
+                            <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600">Qty</th>
+                            <th className="px-4 py-2 text-left text-xs font-semibold text-slate-600">Unit</th>
+                            <th className="px-4 py-2 text-right text-xs font-semibold text-slate-600">Price</th>
+                            <th className="px-4 py-2 text-right text-xs font-semibold text-slate-600">Total</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                          {viewRecipeItems.map((it, idx) => (
+                            <tr key={idx}>
+                              <td className="px-4 py-3 text-sm font-medium text-slate-900">{it.rawMaterialName}</td>
+                              <td className="px-4 py-3 text-sm text-slate-600">{it.quantity}</td>
+                              <td className="px-4 py-3 text-sm text-slate-600">{it.unitName}</td>
+                              <td className="px-4 py-3 text-sm font-medium text-slate-900 text-right">₹{it.price.toFixed(2)}</td>
+                              <td className="px-4 py-3 text-sm font-semibold text-teal-600 text-right">₹{it.totalPrice.toFixed(2)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => {
+                      setShowViewModal(false);
+                      setSelectedRecipeForView(null);
+                      setViewRecipeItems([]);
+                    }}
+                    className="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-lg"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             </div>
           </div>
