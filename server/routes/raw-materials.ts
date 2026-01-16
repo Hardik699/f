@@ -401,7 +401,6 @@ export const handleUploadRawMaterials: RequestHandler = async (req, res) => {
       console.error("Error processing CSV:", error);
       res.status(500).json({ success: false, message: "Server error parsing CSV" });
     }
-  });
 };
 
 // Export all raw materials as CSV

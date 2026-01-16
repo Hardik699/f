@@ -34,6 +34,7 @@ export default defineConfig({
         "cors",
         "multer",
         "csv-parse",
+        "csv-parse/sync",
       ],
       output: {
         format: "es",
