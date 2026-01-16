@@ -695,6 +695,77 @@ export const handleGetRMPriceLogs: RequestHandler = async (req, res) => {
   }
 };
 
+// GET recipes and costing contribution for a raw material
+export const handleGetRMCosting: RequestHandler = async (req, res) => {
+  if (getConnectionStatus() !== "connected") {
+    return res
+      .status(503)
+      .json({ success: false, message: "Database not connected" });
+  }
+
+  try {
+    const db = getDB();
+    if (!db)
+      return res
+        .status(503)
+        .json({ success: false, message: "Database error" });
+
+    const { rawMaterialId } = req.params;
+
+    // Find all recipe_items that reference this raw material
+    const items = await db
+      .collection("recipe_items")
+      .find({ rawMaterialId })
+      .toArray();
+
+    if (!items || items.length === 0) {
+      return res.json({ success: true, data: [] });
+    }
+
+    const recipeIds = Array.from(new Set(items.map((it: any) => it.recipeId)));
+
+    const results: any[] = [];
+
+    for (const recipeId of recipeIds) {
+      let recipe = null;
+      try {
+        recipe = await db.collection("recipes").findOne({ _id: new ObjectId(recipeId) });
+      } catch (err) {
+        // ignore invalid ids
+        recipe = await db.collection("recipes").findOne({ _id: recipeId });
+      }
+
+      const relatedItems = items.filter((it: any) => it.recipeId === recipeId);
+      const contribution = relatedItems.reduce(
+        (sum: number, it: any) => sum + (it.totalPrice || 0),
+        0,
+      );
+
+      results.push({
+        recipeId,
+        recipeCode: recipe?.code || "-",
+        recipeName: recipe?.name || "-",
+        batchSize: recipe?.batchSize || 0,
+        unitName: recipe?.unitName || "",
+        rmContribution: parseFloat(contribution.toFixed(2)),
+        totalRawMaterialCost: recipe?.totalRawMaterialCost || 0,
+        pricePerUnit: recipe?.pricePerUnit || 0,
+        items: relatedItems.map((it: any) => ({
+          quantity: it.quantity,
+          unitName: it.unitName,
+          price: it.price,
+          totalPrice: it.totalPrice,
+        })),
+      });
+    }
+
+    res.json({ success: true, data: results });
+  } catch (error) {
+    console.error("Error fetching RM costing:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
 // POST sync latest vendor price for a raw material and propagate to recipes
 export const handleSyncLatestRMPrice: RequestHandler = async (req, res) => {
   if (getConnectionStatus() !== "connected") {

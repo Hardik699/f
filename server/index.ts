@@ -36,6 +36,7 @@ import {
   handleAddRMVendorPrice,
   handleGetRMVendorPrices,
   handleGetRMPriceLogs,
+  handleGetRMCosting,
   handleDeleteRMPriceLog,
   handleUploadRawMaterials,
   handleExportRawMaterials,
@@ -140,6 +141,7 @@ export async function createServer() {
     handleGetRMVendorPrices,
   );
   app.get("/api/raw-materials/:rawMaterialId/price-logs", handleGetRMPriceLogs);
+  app.get("/api/raw-materials/:rawMaterialId/costing", handleGetRMCosting);
   app.delete(
     "/api/raw-materials/:rawMaterialId/price-logs/:logId",
     handleDeleteRMPriceLog,
