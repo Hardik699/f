@@ -712,6 +712,7 @@ export default function RMManagement() {
 
   return (
     <Layout title="RM Management">
+      <>
       <div className="space-y-6">
         {/* Header Section */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -1581,7 +1582,7 @@ export default function RMManagement() {
             </div>
           </div>
         )}
-      </div>
+    </>
     </Layout>
   );
 }
