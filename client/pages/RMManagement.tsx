@@ -799,7 +799,6 @@ export default function RMManagement() {
             >
               {message}
             </span>
-          </div>
         )}
 
         {/* Filter Section */}
