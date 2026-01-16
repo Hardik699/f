@@ -40,6 +40,8 @@ export default function CreateVendor() {
   const [messageType, setMessageType] = useState<"success" | "error" | "">("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showVendorViewModal, setShowVendorViewModal] = useState(false);
+  const [selectedVendorForView, setSelectedVendorForView] = useState<Vendor | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("auth_token");
@@ -163,6 +165,11 @@ export default function CreateVendor() {
     });
     setEditingId(vendor._id);
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleView = (vendor: Vendor) => {
+    setSelectedVendorForView(vendor);
+    setShowVendorViewModal(true);
   };
 
   const handleDelete = async (id: string) => {
@@ -449,6 +456,14 @@ export default function CreateVendor() {
                           <div className="truncate">{vendor.name}</div>
                           <div className="flex items-center space-x-2 ml-4">
                             <button
+                              onClick={() => handleView(vendor)}
+                              title="View"
+                              className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 rounded hover:bg-emerald-200 dark:hover:bg-emerald-800 transition-colors"
+                            >
+                              <Eye className="w-4 h-4" />
+                              <span className="text-sm">View</span>
+                            </button>
+                            <button
                               onClick={() => handleEdit(vendor)}
                               title="Edit"
                               className="inline-flex items-center gap-1 px-3 py-1.5 bg-teal-100 dark:bg-teal-900 text-teal-700 dark:text-teal-300 rounded hover:bg-teal-200 dark:hover:bg-blue-800 transition-colors"
@@ -477,6 +492,72 @@ export default function CreateVendor() {
             </div>
           )}
         </div>
+
+        {/* Vendor View Modal */}
+        {showVendorViewModal && selectedVendorForView && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-700">
+              <div className="p-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between sticky top-0 bg-white dark:bg-slate-800 z-10">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Vendor Details</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{selectedVendorForView.name}</p>
+                </div>
+                <button
+                  onClick={() => { setShowVendorViewModal(false); setSelectedVendorForView(null); }}
+                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-4">
+                <div>
+                  <p className="text-sm text-slate-600">Contact Person</p>
+                  <p className="font-semibold text-slate-900">{selectedVendorForView.personName || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">Mobile</p>
+                  <p className="font-semibold text-slate-900">{selectedVendorForView.mobileNumber || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">Email</p>
+                  <p className="font-semibold text-slate-900">{selectedVendorForView.email || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">Location / Address</p>
+                  <p className="font-semibold text-slate-900">{selectedVendorForView.location || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">Created At</p>
+                  <p className="font-semibold text-slate-900">{new Date(selectedVendorForView.createdAt).toLocaleString()}</p>
+                </div>
+                {/* Edit log if present */}
+                {(selectedVendorForView as any).editLog && (selectedVendorForView as any).editLog.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold">Edit History</h4>
+                    <div className="space-y-2 text-sm text-slate-600">
+                      {(selectedVendorForView as any).editLog.map((log: any, idx: number) => (
+                        <div key={idx} className="p-2 border rounded-md">
+                          <div className="text-xs text-slate-500">{new Date(log.timestamp).toLocaleString()} by {log.editedBy}</div>
+                          <pre className="text-xs mt-1 whitespace-pre-wrap">{JSON.stringify(log.changes, null, 2)}</pre>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => { setShowVendorViewModal(false); setSelectedVendorForView(null); }}
+                    className="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-lg"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </Layout>
   );
