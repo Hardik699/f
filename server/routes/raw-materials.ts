@@ -1,6 +1,5 @@
 import { RequestHandler } from "express";
-import multer from "multer";
-import { parse } from "csv-parse/sync";
+// multer and csv-parse are dynamically imported inside the upload handler
 import { getDB, getConnectionStatus } from "../db";
 import { ObjectId } from "mongodb";
 
@@ -267,30 +266,32 @@ export const handleDeleteRawMaterial: RequestHandler = async (req, res) => {
 };
 
 // CSV upload handler (bulk create / update)
-const upload = multer({ storage: multer.memoryStorage() });
+export const handleUploadRawMaterials: RequestHandler = async (req, res) => {
+  try {
+    const { default: multer } = await import("multer");
+    const { parse } = await import("csv-parse/sync");
+    const upload = multer({ storage: multer.memoryStorage() });
 
-export const handleUploadRawMaterials: RequestHandler = (req, res, next) => {
-  // multer middleware wrapper
-  return upload.single("file")(req as any, res as any, async (err: any) => {
-    if (err) {
-      console.error("Multer error:", err);
-      return res.status(500).json({ success: false, message: "File upload error" });
-    }
+    await new Promise<void>((resolve, reject) => {
+      upload.single("file")(req as any, res as any, (err: any) => {
+        if (err) return reject(err);
+        resolve();
+      });
+    });
 
     if (!req.file) {
       return res.status(400).json({ success: false, message: "No file provided" });
     }
 
-    try {
-      const db = getDB();
-      if (!db) return res.status(503).json({ success: false, message: "Database error" });
+    const db = getDB();
+    if (!db) return res.status(503).json({ success: false, message: "Database error" });
 
-      const text = req.file.buffer.toString("utf-8");
-      const records: any[] = parse(text, {
-        columns: true,
-        skip_empty_lines: true,
-        trim: true,
-      });
+    const text = req.file.buffer.toString("utf-8");
+    const records: any[] = parse(text, {
+      columns: true,
+      skip_empty_lines: true,
+      trim: true,
+    });
 
       const results: { created: number; updated: number; skipped: Array<any> } = {
         created: 0,
@@ -310,7 +311,7 @@ export const handleUploadRawMaterials: RequestHandler = (req, res, next) => {
         const id = row.id ? row.id.toString().trim() : undefined;
 
         if (!name || !categoryName || !subCategoryName) {
-          results.skipped.push({ row: rowIndex, reason: "Missing required field(s)", row });
+          results.skipped.push({ row: rowIndex, reason: "Missing required field(s)", data: row });
           continue;
         }
 
