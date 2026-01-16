@@ -129,6 +129,7 @@ export async function createServer() {
   // Raw Material routes
   app.get("/api/raw-materials", handleGetRawMaterials);
   app.post("/api/raw-materials", handleCreateRawMaterial);
+  app.post("/api/raw-materials/upload", handleUploadRawMaterials as any);
   app.put("/api/raw-materials/:id", handleUpdateRawMaterial);
   app.delete("/api/raw-materials/:id", handleDeleteRawMaterial);
   app.post("/api/raw-materials/vendor-price", handleAddRMVendorPrice);
@@ -145,6 +146,9 @@ export async function createServer() {
     "/api/raw-materials/:rawMaterialId/sync-latest-price",
     handleSyncLatestRMPrice,
   );
+
+  // CSV export
+  app.get("/api/raw-materials/export", handleExportRawMaterials as any);
 
   // Recipe routes
   app.get("/api/recipes", handleGetRecipes);

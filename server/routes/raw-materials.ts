@@ -1,4 +1,6 @@
 import { RequestHandler } from "express";
+import multer from "multer";
+import { parse } from "csv-parse/sync";
 import { getDB, getConnectionStatus } from "../db";
 import { ObjectId } from "mongodb";
 
@@ -260,6 +262,180 @@ export const handleDeleteRawMaterial: RequestHandler = async (req, res) => {
     });
   } catch (error) {
     console.error("Error deleting raw material:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// CSV upload handler (bulk create / update)
+const upload = multer({ storage: multer.memoryStorage() });
+
+export const handleUploadRawMaterials: RequestHandler = (req, res, next) => {
+  // multer middleware wrapper
+  return upload.single("file")(req as any, res as any, async (err: any) => {
+    if (err) {
+      console.error("Multer error:", err);
+      return res.status(500).json({ success: false, message: "File upload error" });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "No file provided" });
+    }
+
+    try {
+      const db = getDB();
+      if (!db) return res.status(503).json({ success: false, message: "Database error" });
+
+      const text = req.file.buffer.toString("utf-8");
+      const records: any[] = parse(text, {
+        columns: true,
+        skip_empty_lines: true,
+        trim: true,
+      });
+
+      const results: { created: number; updated: number; skipped: Array<any> } = {
+        created: 0,
+        updated: 0,
+        skipped: [],
+      };
+
+      for (let i = 0; i < records.length; i++) {
+        const row = records[i];
+        const rowIndex = i + 2; // header is line 1
+
+        const name = (row.rawMaterialName || row.name || "").toString().trim();
+        const categoryName = (row.category || "").toString().trim();
+        const subCategoryName = (row.subCategory || "").toString().trim();
+        const unitName = (row.unit || "").toString().trim();
+        const hsnCode = (row.hsnCode || "").toString().trim();
+        const id = row.id ? row.id.toString().trim() : undefined;
+
+        if (!name || !categoryName || !subCategoryName) {
+          results.skipped.push({ row: rowIndex, reason: "Missing required field(s)", row });
+          continue;
+        }
+
+        // find category & subcategory
+        const category = await db.collection("categories").findOne({ name: categoryName });
+        if (!category) {
+          results.skipped.push({ row: rowIndex, reason: `Category not found: ${categoryName}`, row });
+          continue;
+        }
+
+        const subcategory = await db.collection("subcategories").findOne({ name: subCategoryName, categoryId: category._id?.toString() ?? category._id });
+        // fallback: try only by name
+        if (!subcategory) {
+          const sub2 = await db.collection("subcategories").findOne({ name: subCategoryName });
+          if (!sub2) {
+            results.skipped.push({ row: rowIndex, reason: `SubCategory not found: ${subCategoryName}`, row });
+            continue;
+          }
+        }
+
+        // resolve unit if exists
+        let unit: any = null;
+        if (unitName) {
+          unit = await db.collection("units").findOne({ name: unitName });
+        }
+
+        // If id present -> update
+        if (id) {
+          try {
+            const updateData: any = {
+              name,
+              categoryId: (category._id as any).toString(),
+              categoryName: category.name,
+              subCategoryName,
+              updatedAt: new Date(),
+            };
+
+            if (subcategory) updateData.subCategoryId = (subcategory._id as any).toString();
+            if (unit) {
+              updateData.unitId = (unit._id as any).toString();
+              updateData.unitName = unit.name;
+            }
+            if (hsnCode !== undefined) updateData.hsnCode = hsnCode;
+
+            const { matchedCount } = await db
+              .collection("raw_materials")
+              .updateOne({ _id: new ObjectId(id) }, { $set: updateData });
+
+            if (matchedCount === 0) {
+              results.skipped.push({ row: rowIndex, reason: `ID not found: ${id}`, row });
+              continue;
+            }
+
+            results.updated += 1;
+          } catch (err) {
+            results.skipped.push({ row: rowIndex, reason: `Update error: ${String(err)}`, row });
+          }
+        } else {
+          // create
+          try {
+            const code = await getNextRMCode(db);
+            const newRM: RawMaterial = {
+              code,
+              name,
+              categoryId: (category._id as any).toString(),
+              categoryName: category.name,
+              subCategoryId: (subcategory ? (subcategory._id as any).toString() : undefined) as any,
+              subCategoryName,
+              unitId: unit ? (unit._id as any).toString() : undefined,
+              unitName: unit ? unit.name : undefined,
+              hsnCode: hsnCode || undefined,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              createdBy: "admin",
+            };
+
+            await db.collection("raw_materials").insertOne(newRM);
+            results.created += 1;
+          } catch (err) {
+            results.skipped.push({ row: rowIndex, reason: `Create error: ${String(err)}`, row });
+          }
+        }
+      }
+
+      res.json({ success: true, data: results });
+    } catch (error) {
+      console.error("Error processing CSV:", error);
+      res.status(500).json({ success: false, message: "Server error parsing CSV" });
+    }
+  });
+};
+
+// Export all raw materials as CSV
+export const handleExportRawMaterials: RequestHandler = async (_req, res) => {
+  if (getConnectionStatus() !== "connected") {
+    return res.status(503).json({ success: false, message: "Database not connected" });
+  }
+
+  try {
+    const db = getDB();
+    if (!db) return res.status(503).json({ success: false, message: "Database error" });
+
+    const rawMaterials = await db.collection("raw_materials").find({}).toArray();
+
+    const headers = ["id", "rawMaterialName", "category", "subCategory", "unit", "hsnCode"];
+
+    const lines = [headers.join(",")];
+    for (const rm of rawMaterials) {
+      const row = [
+        rm._id?.toString() || "",
+        (rm.name || "").replace(/"/g, '""'),
+        (rm.categoryName || "").replace(/"/g, '""'),
+        (rm.subCategoryName || "").replace(/"/g, '""'),
+        (rm.unitName || "").replace(/"/g, '""'),
+        (rm.hsnCode || "").toString().replace(/"/g, '""'),
+      ].map((v) => (v && v.toString().includes(",") ? `"${v}"` : v));
+      lines.push(row.join(","));
+    }
+
+    const csv = lines.join("\n");
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", `attachment; filename="raw-materials-export.csv"`);
+    res.send(csv);
+  } catch (error) {
+    console.error("Error exporting CSV:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
