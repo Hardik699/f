@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Edit2,
@@ -623,6 +623,66 @@ export default function RMManagement() {
   };
 
   const filteredRawMaterials = getFilteredRawMaterials();
+  const uploadInputRef = useRef<HTMLInputElement | null>(null);
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [uploadResult, setUploadResult] = useState<any | null>(null);
+
+  // Handle file selection and upload
+  useEffect(() => {
+    const input = uploadInputRef.current;
+    if (!input) return;
+    const handleChange = async (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      if (!target.files || target.files.length === 0) return;
+      const file = target.files[0];
+      setUploadLoading(true);
+      try {
+        const fd = new FormData();
+        fd.append("file", file, file.name);
+        const res = await fetch("/api/raw-materials/upload", { method: "POST", body: fd });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          setMessageType("error");
+          setMessage(data.message || "Upload failed");
+          setUploadResult(data.data || null);
+        } else {
+          setMessageType("success");
+          setMessage(`Upload complete — created: ${data.data.created}, updated: ${data.data.updated}, skipped: ${data.data.skipped.length}`);
+          setUploadResult(data.data);
+          // if skipped rows exist, generate an errors CSV and download
+          if (Array.isArray(data.data.skipped) && data.data.skipped.length > 0) {
+            const header = ["row","reason","data"];
+            const lines = [header.join(",")];
+            for (const s of data.data.skipped) {
+              const rowJson = JSON.stringify(s.data || {});
+              const line = [s.row, `"${(s.reason || "").replace(/"/g, '""') }"`, `"${rowJson.replace(/"/g, '""')}"`];
+              lines.push(line.join(","));
+            }
+            const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "rm-upload-errors.csv";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+          }
+          // refresh list
+          setTimeout(() => fetchRawMaterials(), 1000);
+        }
+      } catch (err) {
+        console.error(err);
+        setMessageType("error");
+        setMessage("Error uploading CSV file");
+      } finally {
+        setUploadLoading(false);
+        if (uploadInputRef.current) uploadInputRef.current.value = "";
+      }
+    };
+    input.addEventListener("change", handleChange as any);
+    return () => input.removeEventListener("change", handleChange as any);
+  }, [fetchRawMaterials]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-IN", {
@@ -658,16 +718,65 @@ export default function RMManagement() {
               Manage your raw materials inventory
             </p>
           </div>
-          <button
-            onClick={() => setShowAddRMForm(true)}
-            className="w-full sm:w-auto btn btn-primary whitespace-nowrap flex items-center gap-2"
-            style={{ boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)" }}
-          >
-            <Plus className="w-5 h-5" />
-            <span>Add Raw Material</span>
-          </button>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <button
+              onClick={() => setShowAddRMForm(true)}
+              className="btn btn-primary whitespace-nowrap flex items-center gap-2"
+              style={{ boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)" }}
+            >
+              <Plus className="w-5 h-5" />
+              <span>Add Raw Material</span>
+            </button>
+            <div className="flex items-center gap-2 ml-2">
+              <input
+                ref={useRef<HTMLInputElement | null>(null)}
+                type="file"
+                accept=".csv,text/csv"
+                className="hidden"
+                id="rm-upload-input"
+              />
+            </div>
+          </div>
         </div>
+        
+        {/* Upload / Download Toolbar */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <label htmlFor="rm-upload-input" className="cursor-pointer inline-flex items-center gap-2 px-3 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3v12" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M8 7l4-4 4 4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <span>Upload CSV</span>
+            </label>
 
+            <button
+              onClick={async () => {
+                try {
+                  const res = await fetch("/api/raw-materials/export");
+                  if (!res.ok) throw new Error("Export failed");
+                  const blob = await res.blob();
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = "raw-materials-export.csv";
+                  document.body.appendChild(a);
+                  a.click();
+                  a.remove();
+                  URL.revokeObjectURL(url);
+                } catch (err) {
+                  console.error(err);
+                  setMessageType("error");
+                  setMessage("Failed to download export");
+                }
+              }}
+              className="inline-flex items-center gap-2 px-3 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+            >
+              ⬇ Download CSV
+            </button>
+
+            <a href="/demo-rm-create.csv" download className="inline-flex items-center gap-2 px-3 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-md hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+              ⬇ Demo CSV
+            </a>
+          </div>
+        </div>
         {/* Message Alert */}
         {message && (
           <div
