@@ -37,6 +37,8 @@ import {
   handleGetRMVendorPrices,
   handleGetRMPriceLogs,
   handleDeleteRMPriceLog,
+  handleUploadRawMaterials,
+  handleExportRawMaterials,
   handleSyncLatestRMPrice,
 } from "./routes/raw-materials";
 import {
