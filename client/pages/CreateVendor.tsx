@@ -32,11 +32,7 @@ export default function CreateVendor() {
     email: "",
     location: "",
   });
-  const [gstNumber, setGstNumber] = useState("");
-  const [gstLoading, setGstLoading] = useState(false);
-  const [gstMode, setGstMode] = useState<"AUTO" | "MANUAL">("MANUAL");
-  const [gstStatus, setGstStatus] = useState<string | null>(null);
-  const [gstWarning, setGstWarning] = useState<string | null>(null);
+  
 
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [loading, setLoading] = useState(false);
@@ -58,73 +54,7 @@ export default function CreateVendor() {
     fetchVendors();
   }, [navigate]);
 
-  // Debounced GST lookup
-  useEffect(() => {
-    const gst = gstNumber.trim().toUpperCase();
-    setGstWarning(null);
-
-    if (!gst) {
-      setGstMode("MANUAL");
-      setGstStatus(null);
-      return;
-    }
-
-    if (gst.length !== 15) {
-      // don't call API until full length
-      setGstMode("MANUAL");
-      return;
-    }
-
-    const re = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][0-9A-Z]Z[0-9A-Z]$/i;
-    if (!re.test(gst)) {
-      setGstMode("MANUAL");
-      setGstWarning("Invalid GST format");
-      return;
-    }
-
-    let mounted = true;
-    const timer = setTimeout(async () => {
-      try {
-        setGstLoading(true);
-        const resp = await fetch("/api/gst/search", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ gstin: gst }),
-        });
-        const json = await resp.json();
-        if (!mounted) return;
-        if (resp.ok && json.success && json.data) {
-          setGstMode("AUTO");
-          setGstStatus(json.data.sts || null);
-          // Auto-fill form fields conservatively
-          if (json.data.lgnm) setFormData((s) => ({ ...s, name: json.data.lgnm }));
-          else if (json.data.tradeNam) setFormData((s) => ({ ...s, name: json.data.tradeNam }));
-          if (json.data.pradr?.addr) setFormData((s) => ({ ...s, location: json.data.pradr.addr }));
-          if (json.data.stj) setFormData((s) => ({ ...s, location: (json.data.pradr?.addr ? json.data.pradr.addr + ", " : "") + json.data.stj }));
-          if (json.data.sts && json.data.sts.toLowerCase() === "cancelled") {
-            setGstWarning("GST status is Cancelled — please verify");
-          }
-        } else {
-          // API reported not found or invalid
-          setGstMode("MANUAL");
-          setGstStatus(null);
-          if (json && json.message) setGstWarning(json.message);
-        }
-      } catch (err) {
-        console.error("GST lookup failed", err);
-        setGstMode("MANUAL");
-        setGstStatus(null);
-        setGstWarning("GST lookup failed — manual entry enabled");
-      } finally {
-        setGstLoading(false);
-      }
-    }, 700);
-
-    return () => {
-      mounted = false;
-      clearTimeout(timer);
-    };
-  }, [gstNumber]);
+  
 
   const fetchVendors = async () => {
     try {
@@ -144,10 +74,7 @@ export default function CreateVendor() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    // If GST present, ensure length 15
-    if (gstNumber && gstNumber.trim() && gstNumber.trim().length !== 15) {
-      newErrors.gstNumber = "GST must be 15 characters";
-    }
+    
 
     if (!formData.name.trim()) {
       newErrors.name = "Vendor name is required";
@@ -198,9 +125,6 @@ export default function CreateVendor() {
 
       const payload = {
         ...formData,
-        gstNumber: gstNumber?.trim().toUpperCase() || undefined,
-        dataSource: gstMode === "AUTO" ? "GST_API" : "MANUAL",
-        gstStatus: gstStatus || undefined,
       } as any;
 
       const response = await fetch(url, {
@@ -294,9 +218,6 @@ export default function CreateVendor() {
       email: "",
       location: "",
     });
-    setGstNumber("");
-    setGstMode("MANUAL");
-    setGstStatus(null);
     setEditingId(null);
     setErrors({});
   };
@@ -336,38 +257,7 @@ export default function CreateVendor() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* GST Number (auto-fill) */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                GST Number (Optional)
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={gstNumber}
-                  onChange={(e) => setGstNumber(e.target.value)}
-                  placeholder="Enter GST number to auto-fill"
-                  maxLength={15}
-                  className={`w-full px-4 py-2.5 rounded-lg bg-white dark:bg-slate-700 border transition-all ${
-                    errors.gstNumber
-                      ? "border-red-500 dark:border-red-400"
-                      : "border-slate-300 dark:border-slate-600"
-                  } text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                />
-                {gstLoading && (
-                  <div className="absolute right-3 top-3 w-4 h-4 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
-                )}
-              </div>
-              {gstWarning && (
-                <p className="text-yellow-700 dark:text-yellow-300 text-sm mt-1">{gstWarning}</p>
-              )}
-              {gstStatus && (
-                <p className="text-sm mt-1 text-slate-600 dark:text-slate-300">GST Status: <span className="font-semibold">{gstStatus}</span></p>
-              )}
-              {errors.gstNumber && (
-                <p className="text-red-600 dark:text-red-400 text-sm mt-1">{errors.gstNumber}</p>
-              )}
-            </div>
+            
             {/* Vendor Name */}
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">

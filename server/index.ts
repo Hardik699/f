@@ -28,7 +28,6 @@ import {
   handleUpdateVendor,
   handleDeleteVendor,
 } from "./routes/vendors";
-import { handleGSTSearch } from "./routes/gst";
 import {
   handleGetRawMaterials,
   handleCreateRawMaterial,
@@ -129,8 +128,7 @@ export async function createServer() {
   app.put("/api/vendors/:id", handleUpdateVendor);
   app.delete("/api/vendors/:id", handleDeleteVendor);
 
-  // GST lookup proxy (uses SANDBOX_GST_API_KEY env)
-  app.post("/api/gst/search", handleGSTSearch);
+  // GST lookup proxy removed
 
   // Raw Material routes
   app.get("/api/raw-materials", handleGetRawMaterials);
