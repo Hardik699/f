@@ -4,7 +4,8 @@ import { RequestHandler } from "express";
 const cache = new Map<string, { data: any; ts: number }>();
 const TTL = 1000 * 60 * 60 * 24; // 24 hours
 
-const GST_API_URL = "https://api.sandbox.co.in/gst/compliance/public/gstin/search";
+const SANDBOX_GST_API_URL = "https://api.sandbox.co.in/gst/compliance/public/gstin/search";
+const APPYFLOW_GST_API_URL = "https://appyflow.in/api/verifyGST";
 
 function validateGstin(gstin: string) {
   if (!gstin) return false;
@@ -27,27 +28,71 @@ export const handleGSTSearch: RequestHandler = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid GSTIN" });
     }
 
-    // Check cache
-    const cached = cache.get(gst);
+    // Determine provider based on available env keys. Prefer AppyFlow if present.
+    const appyKey = process.env.APPYFLOW_GST_API_KEY;
+    const sandboxKey = process.env.SANDBOX_GST_API_KEY;
+
+    let provider: "appyflow" | "sandbox" | null = null;
+    if (appyKey) provider = "appyflow";
+    else if (sandboxKey) provider = "sandbox";
+
+    if (!provider) {
+      return res.status(500).json({ success: false, message: "Server not configured: APPYFLOW_GST_API_KEY or SANDBOX_GST_API_KEY missing" });
+    }
+
+    const cacheKey = `${provider}:${gst}`;
+    const cached = cache.get(cacheKey);
     if (cached && Date.now() - cached.ts < TTL) {
       return res.json({ success: true, source: "cache", data: cached.data });
     }
 
-    const apiKey = process.env.SANDBOX_GST_API_KEY;
-    if (!apiKey) {
-      return res.status(500).json({ success: false, message: "Server not configured: SANDBOX_GST_API_KEY missing" });
+    let body: any = null;
+
+    if (provider === "appyflow") {
+      // AppyFlow expects GET with query params
+      const url = new URL(APPYFLOW_GST_API_URL);
+      url.searchParams.set("gstNo", gst);
+      url.searchParams.set("key_secret", appyKey as string);
+      const resp = await fetch(url.toString(), { method: "GET" });
+      body = await resp.json().catch(() => null);
+
+      if (!body) {
+        return res.status(502).json({ success: false, message: "Invalid response from AppyFlow provider" });
+      }
+
+      if (body.error) {
+        return res.status(404).json({ success: false, message: body.message || "GSTIN not found" });
+      }
+
+      // Normalize AppyFlow response to existing shape
+      const t = body.taxpayerInfo || {};
+      const normalized = {
+        gstin: t.gstin,
+        lgnm: t.legalName,
+        tradeNam: t.tradeName,
+        sts: t.gstStatus,
+        rgdt: t.registrationDate,
+        pradr: { addr: [t.address?.buildingName, t.address?.street, t.address?.city].filter(Boolean).join(", ") },
+        stj: t.address?.state,
+        pincode: t.address?.pincode,
+        constitution: t.constitutionOfBusiness,
+      };
+
+      cache.set(cacheKey, { data: normalized, ts: Date.now() });
+      return res.json({ success: true, source: "appyflow", data: normalized });
     }
 
-    const resp = await fetch(GST_API_URL, {
+    // Fallback: sandbox provider (POST)
+    const resp = await fetch(SANDBOX_GST_API_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": apiKey,
+        "x-api-key": sandboxKey as string,
       },
       body: JSON.stringify({ gstin: gst }),
     });
 
-    const body = await resp.json().catch(() => null);
+    body = await resp.json().catch(() => null);
 
     if (!body) {
       return res.status(502).json({ success: false, message: "Invalid response from GST provider" });
@@ -55,8 +100,8 @@ export const handleGSTSearch: RequestHandler = async (req, res) => {
 
     // Provider returns { code: 200, data: {...} }
     if (body.code === 200 && body.data) {
-      cache.set(gst, { data: body.data, ts: Date.now() });
-      return res.json({ success: true, source: "gst_api", data: body.data });
+      cache.set(cacheKey, { data: body.data, ts: Date.now() });
+      return res.json({ success: true, source: "sandbox", data: body.data });
     }
 
     // Map provider error codes/messages
