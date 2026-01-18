@@ -387,7 +387,6 @@ export default function CreateUnit() {
                 </tbody>
               </table>
             </div>
-            {/* Pagination */}
             <div className="p-4 flex items-center justify-end space-x-3">
               <div className="text-sm text-slate-600">Showing {units.length===0?0:Math.min((currentPage-1)*itemsPerPage+1, units.length)}-{Math.min(currentPage*itemsPerPage, units.length)} of {units.length}</div>
               <div className="flex items-center space-x-2">
