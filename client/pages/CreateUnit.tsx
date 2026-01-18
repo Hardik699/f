@@ -331,67 +331,50 @@ export default function CreateUnit() {
               No units found. Create one above!
             </div>
           ) : (
-            <div className="overflow-x-auto table-responsive">
-              <table className="w-full">
-                <thead className="bg-slate-100 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600">
+            {/* TABLE */}
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                <thead>
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      Short Code
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      Created By
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      Actions
-                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300">Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300">Short Code</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300">Actions</th>
                   </tr>
                 </thead>
+
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                  {units.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((unit) => (
-                    <tr
-                      key={unit._id}
-                      className="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-                    >
-                      <td className="px-6 py-4 text-sm font-medium text-slate-900 dark:text-white">
-                        {unit.name}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
-                        <span className="px-3 py-1 bg-slate-100 dark:bg-slate-700 rounded text-slate-900 dark:text-slate-200 font-semibold">
-                          {unit.shortCode}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
-                        {unit.createdBy}
-                      </td>
-                      <td className="px-6 py-4 text-sm space-x-2">
-                        <button
-                          onClick={() => handleEdit(unit)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 bg-teal-100 dark:bg-teal-900 text-teal-700 dark:text-teal-300 rounded hover:bg-teal-200 dark:hover:bg-blue-800 transition-colors"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(unit._id)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded hover:bg-red-200 dark:hover:bg-red-800 transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {(units || [])
+                    .slice(
+                      (currentPage - 1) * itemsPerPage,
+                      currentPage * itemsPerPage
+                    )
+                    .map((unit) => (
+                      <tr key={unit._id} className="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                        <td className="px-6 py-4 text-sm font-medium text-slate-900 dark:text-white">{unit.name}</td>
+                        <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+                          <span className="px-3 py-1 bg-slate-100 dark:bg-slate-700 rounded text-slate-900 dark:text-slate-200 font-semibold">{unit.shortCode}</span>
+                        </td>
+                        <td className="px-6 py-4 text-sm space-x-2">
+                          <button onClick={() => handleEdit(unit)} className="inline-flex items-center gap-1 px-3 py-1.5 bg-teal-100 dark:bg-teal-900 text-teal-700 dark:text-teal-300 rounded hover:bg-teal-200 dark:hover:bg-blue-800 transition-colors"><Edit2 className="w-4 h-4" /> Edit</button>
+                          <button onClick={() => handleDelete(unit._id)} className="inline-flex items-center gap-1 px-3 py-1.5 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded hover:bg-red-200 dark:hover:bg-red-800 transition-colors"><Trash2 className="w-4 h-4" /> Delete</button>
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
+
+            {/* PAGINATION */}
             <div className="p-4 flex items-center justify-end space-x-3">
-              <div className="text-sm text-slate-600">Showing {units.length===0?0:Math.min((currentPage-1)*itemsPerPage+1, units.length)}-{Math.min(currentPage*itemsPerPage, units.length)} of {units.length}</div>
+              <div className="text-sm text-slate-600">
+                Showing {units.length === 0 ? 0 : Math.min((currentPage - 1) * itemsPerPage + 1, units.length)}-
+                {Math.min(currentPage * itemsPerPage, units.length)} of {units.length}
+              </div>
+
               <div className="flex items-center space-x-2">
-                <button onClick={() => setCurrentPage((p) => Math.max(1, p-1))} disabled={currentPage===1} className="px-3 py-1 bg-slate-100 rounded disabled:opacity-50">Prev</button>
-                <button onClick={() => setCurrentPage((p) => Math.min(p+1, Math.ceil(units.length/itemsPerPage)))} disabled={currentPage>=Math.ceil(units.length/itemsPerPage)} className="px-3 py-1 bg-slate-100 rounded disabled:opacity-50">Next</button>
+                <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="px-3 py-1 bg-slate-100 rounded disabled:opacity-50">Prev</button>
+
+                <button onClick={() => setCurrentPage((p) => Math.min(Math.ceil(units.length / itemsPerPage), p + 1))} disabled={currentPage >= Math.ceil(units.length / itemsPerPage)} className="px-3 py-1 bg-slate-100 rounded disabled:opacity-50">Next</button>
               </div>
             </div>
           )}
