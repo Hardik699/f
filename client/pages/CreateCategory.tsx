@@ -347,6 +347,7 @@ export default function CreateCategory() {
               No categories found. Create one above!
             </div>
           ) : (
+            <>
             <div className="overflow-x-auto table-responsive">
               <table className="w-full">
                 <thead className="bg-slate-100 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600">
@@ -429,6 +430,7 @@ export default function CreateCategory() {
                 <button onClick={() => setCurrentPage((p) => Math.min(p+1, Math.ceil(categories.length/itemsPerPage)))} disabled={currentPage>=Math.ceil(categories.length/itemsPerPage)} className="px-3 py-1 bg-slate-100 rounded disabled:opacity-50">Next</button>
               </div>
             </div>
+            </>
           )}
         </div>
       </div>
