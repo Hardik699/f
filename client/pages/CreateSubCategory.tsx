@@ -387,6 +387,7 @@ export default function CreateSubCategory() {
               No sub categories found. Create one above!
             </div>
           ) : (
+            <>
             {/* TABLE */}
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
@@ -436,6 +437,7 @@ export default function CreateSubCategory() {
                 <button onClick={() => setCurrentPage((p) => Math.min(Math.ceil(subcategories.length / itemsPerPage), p + 1))} disabled={currentPage >= Math.ceil(subcategories.length / itemsPerPage)} className="px-3 py-1 bg-slate-100 rounded disabled:opacity-50">Next</button>
               </div>
             </div>
+            </>
           )}
         </div>
       </div>
