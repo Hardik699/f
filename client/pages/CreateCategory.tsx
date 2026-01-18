@@ -316,7 +316,6 @@ export default function CreateCategory() {
               )}
             </div>
           </form>
-          </form>
           <div className="mt-4">
             <button onClick={() => { handleCancel(); setShowForm(false); }} className="mt-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 rounded">Back to list</button>
           </div>
