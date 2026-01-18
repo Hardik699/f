@@ -369,8 +369,12 @@ export default function CreateCategory() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                  {(categories || []).map((category) => (
-                                      {(categories || []).slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage).map((category) => (
+                  {(categories || [])
+                    .slice(
+                      (currentPage - 1) * itemsPerPage,
+                      currentPage * itemsPerPage
+                    )
+                    .map((category) => (
                     <tr
                       key={category._id}
                       className="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
