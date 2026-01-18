@@ -43,10 +43,10 @@ describe("GST Search handler", () => {
 
     await mod.handleGSTSearch(req, res);
 
-    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.status).toHaveBeenCalledWith(501);
     const arg = res.json.mock.calls[0][0];
     expect(arg.success).toBe(false);
-    expect(arg.message).toContain("SANDBOX_GST_API_KEY");
+    expect(arg.message).toContain("disabled");
   });
 
   it("calls provider and caches result", async () => {
@@ -62,19 +62,11 @@ describe("GST Search handler", () => {
     const res = makeRes();
 
     await mod.handleGSTSearch(req, res);
-
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(res.json).toHaveBeenCalled();
+    // External provider is disabled in the handler; ensure no fetch occurred and proper status returned
+    expect(fetchMock).toHaveBeenCalledTimes(0);
+    expect(res.status).toHaveBeenCalledWith(501);
     const first = res.json.mock.calls[0][0];
-    expect(first.success).toBe(true);
-    expect(first.source).toBe("gst_api");
-
-    // Call again - should hit cache and not call fetch
-    const res2 = makeRes();
-    await mod.handleGSTSearch(req, res2);
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    const second = res2.json.mock.calls[0][0];
-    expect(second.success).toBe(true);
-    expect(second.source).toBe("cache");
+    expect(first.success).toBe(false);
+    expect(first.message).toContain("disabled");
   });
 });
