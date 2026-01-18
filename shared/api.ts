@@ -32,3 +32,25 @@ export interface DBStatusResponse {
   status: "connected" | "disconnected" | "connecting";
   message: string;
 }
+
+/**
+ * GST search response from server proxy
+ */
+export interface GstApiData {
+  gstin: string;
+  lgnm?: string; // legal name
+  tradeNam?: string;
+  sts?: string; // status
+  rgdt?: string; // registration date
+  pradr?: { addr?: string };
+  ctj?: string;
+  stj?: string;
+  constitution?: string;
+}
+
+export interface GstSearchResponse {
+  success: boolean;
+  source?: string; // gst_api | cache
+  data?: GstApiData;
+  message?: string;
+}

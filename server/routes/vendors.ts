@@ -9,6 +9,12 @@ export interface Vendor {
   mobileNumber: string;
   email?: string;
   location: string;
+  gstNumber?: string;
+  dataSource?: "GST_API" | "MANUAL";
+  gstStatus?: string;
+  registrationDate?: string;
+  address?: string;
+  state?: string;
   createdAt: Date;
   updatedAt: Date;
   createdBy: string;
@@ -54,7 +60,7 @@ export const handleCreateVendor: RequestHandler = async (req, res) => {
       .json({ success: false, message: "Database not connected" });
   }
 
-  const { name, personName, mobileNumber, email, location } = req.body;
+  const { name, personName, mobileNumber, email, location, gstNumber, dataSource, gstStatus, registrationDate, address, state } = req.body;
   const username = "admin";
 
   if (!name || !name.trim()) {
@@ -101,12 +107,26 @@ export const handleCreateVendor: RequestHandler = async (req, res) => {
         });
     }
 
+    // If GST provided, ensure GST is unique
+    if (gstNumber && gstNumber.trim()) {
+      const dupGst = await db.collection("vendors").findOne({ gstNumber: gstNumber.trim().toUpperCase() });
+      if (dupGst) {
+        return res.status(400).json({ success: false, message: "Vendor with this GST number already exists" });
+      }
+    }
+
     const newVendor: Vendor = {
       name: name.trim(),
       personName: personName.trim(),
       mobileNumber: mobileNumber.trim(),
       email: email?.trim() || "",
       location: location.trim(),
+      gstNumber: gstNumber?.trim().toUpperCase() || undefined,
+      dataSource: dataSource || "MANUAL",
+      gstStatus: gstStatus || undefined,
+      registrationDate: registrationDate || undefined,
+      address: address || undefined,
+      state: state || undefined,
       createdAt: new Date(),
       updatedAt: new Date(),
       createdBy: username,
@@ -134,7 +154,7 @@ export const handleUpdateVendor: RequestHandler = async (req, res) => {
   }
 
   const { id } = req.params;
-  const { name, personName, mobileNumber, email, location } = req.body;
+  const { name, personName, mobileNumber, email, location, gstNumber, dataSource, gstStatus, registrationDate, address, state } = req.body;
   const username = "admin";
 
   if (!id) {
@@ -174,6 +194,17 @@ export const handleUpdateVendor: RequestHandler = async (req, res) => {
       }
     }
 
+    // Check for duplicate GST when modifying/adding
+    if (gstNumber && gstNumber.trim()) {
+      const gstNormalized = gstNumber.trim().toUpperCase();
+      if (!existing.gstNumber || existing.gstNumber !== gstNormalized) {
+        const dup = await db.collection("vendors").findOne({ gstNumber: gstNormalized });
+        if (dup) {
+          return res.status(400).json({ success: false, message: "Vendor with this GST number already exists" });
+        }
+      }
+    }
+
     const changes: Record<string, any> = {};
     if (name && name !== existing.name)
       changes.name = { from: existing.name, to: name };
@@ -185,6 +216,10 @@ export const handleUpdateVendor: RequestHandler = async (req, res) => {
       changes.email = { from: existing.email, to: email };
     if (location && location !== existing.location)
       changes.location = { from: existing.location, to: location };
+    if (gstNumber !== undefined && gstNumber !== existing.gstNumber)
+      changes.gstNumber = { from: existing.gstNumber, to: gstNumber };
+    if (dataSource !== undefined && dataSource !== existing.dataSource)
+      changes.dataSource = { from: existing.dataSource, to: dataSource };
 
     const updateData: Partial<Vendor> = {
       updatedAt: new Date(),
@@ -195,6 +230,12 @@ export const handleUpdateVendor: RequestHandler = async (req, res) => {
     if (mobileNumber) updateData.mobileNumber = mobileNumber.trim();
     if (email !== undefined) updateData.email = email?.trim() || "";
     if (location) updateData.location = location.trim();
+    if (gstNumber !== undefined) updateData.gstNumber = gstNumber?.trim().toUpperCase() || undefined;
+    if (dataSource !== undefined) updateData.dataSource = dataSource;
+    if (gstStatus !== undefined) updateData.gstStatus = gstStatus;
+    if (registrationDate !== undefined) updateData.registrationDate = registrationDate;
+    if (address !== undefined) updateData.address = address;
+    if (state !== undefined) updateData.state = state;
 
     const editLogEntry = {
       timestamp: new Date(),
