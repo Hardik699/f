@@ -422,7 +422,6 @@ export default function CreateCategory() {
                 </tbody>
               </table>
             </div>
-            </div>
             <div className="p-4 flex items-center justify-end space-x-3">
               <div className="text-sm text-slate-600">Showing {categories.length===0?0:Math.min((currentPage-1)*itemsPerPage+1, categories.length)}-{Math.min(currentPage*itemsPerPage, categories.length)} of {categories.length}</div>
               <div className="flex items-center space-x-2">
