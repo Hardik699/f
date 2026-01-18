@@ -27,6 +27,9 @@ export default function CreateCategory() {
   });
 
   const [categories, setCategories] = useState<Category[]>([]);
+    const [showForm, setShowForm] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
   const [loading, setLoading] = useState(false);
   const [tableLoading, setTableLoading] = useState(true);
   const [message, setMessage] = useState("");
@@ -116,11 +119,12 @@ export default function CreateCategory() {
         setEditingId(null);
         setErrors({});
 
-        // Refresh categories
+        // After save, return to list and refresh
+        setShowForm(false);
         setTimeout(() => {
           fetchCategories();
           setMessage("");
-        }, 1500);
+        }, 500);
       } else {
         setMessageType("error");
         setMessage(data.message || "Operation failed");
@@ -142,6 +146,7 @@ export default function CreateCategory() {
         status: (category.status as "active" | "inactive") ?? "active",
       });
       setEditingId(category._id);
+      setShowForm(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       console.error("Error while attempting to edit category:", err);
@@ -186,7 +191,8 @@ export default function CreateCategory() {
     <Layout title="Create Category">
       <div className="space-y-8">
         {/* Form Section */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-md p-8">
+        {showForm ? (
+          <div className="min-h-screen bg-white dark:bg-slate-800 rounded-2xl shadow-md p-8">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">
             {editingId ? "Edit Category" : "Add New Category"}
           </h2>
@@ -310,7 +316,17 @@ export default function CreateCategory() {
               )}
             </div>
           </form>
+          </form>
+          <div className="mt-4">
+            <button onClick={() => { handleCancel(); setShowForm(false); }} className="mt-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 rounded">Back to list</button>
+          </div>
         </div>
+        ) : (
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-md p-6 flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Categories</h2>
+            <button onClick={() => setShowForm(true)} className="px-4 py-2 bg-teal-600 text-white rounded-lg">+ Add New Category</button>
+          </div>
+        )}
 
         {/* Table Section */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-md overflow-hidden">
@@ -355,6 +371,7 @@ export default function CreateCategory() {
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                   {(categories || []).map((category) => (
+                                      {(categories || []).slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage).map((category) => (
                     <tr
                       key={category._id}
                       className="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
@@ -401,6 +418,14 @@ export default function CreateCategory() {
                   ))}
                 </tbody>
               </table>
+            </div>
+            </div>
+            <div className="p-4 flex items-center justify-end space-x-3">
+              <div className="text-sm text-slate-600">Showing {categories.length===0?0:Math.min((currentPage-1)*itemsPerPage+1, categories.length)}-{Math.min(currentPage*itemsPerPage, categories.length)} of {categories.length}</div>
+              <div className="flex items-center space-x-2">
+                <button onClick={() => setCurrentPage((p) => Math.max(1,p-1))} disabled={currentPage===1} className="px-3 py-1 bg-slate-100 rounded disabled:opacity-50">Prev</button>
+                <button onClick={() => setCurrentPage((p) => Math.min(p+1, Math.ceil(categories.length/itemsPerPage)))} disabled={currentPage>=Math.ceil(categories.length/itemsPerPage)} className="px-3 py-1 bg-slate-100 rounded disabled:opacity-50">Next</button>
+              </div>
             </div>
           )}
         </div>

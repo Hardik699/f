@@ -32,6 +32,9 @@ export default function CreateSubCategory() {
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [subcategories, setSubcategories] = useState<SubCategory[]>([]);
+  const [showForm, setShowForm] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const [loading, setLoading] = useState(false);
   const [tableLoading, setTableLoading] = useState(true);
   const [message, setMessage] = useState("");
@@ -140,11 +143,11 @@ export default function CreateSubCategory() {
         setFormData({ categoryId: "", name: "", status: "active" });
         setEditingId(null);
         setErrors({});
-
+        setShowForm(false);
         setTimeout(() => {
           fetchSubcategories();
           setMessage("");
-        }, 1500);
+        }, 500);
       } else {
         setMessageType("error");
         setMessage(data.message || "Operation failed");
@@ -166,6 +169,7 @@ export default function CreateSubCategory() {
         status: (subcategory.status as "active" | "inactive") ?? "active",
       });
       setEditingId(subcategory._id);
+      setShowForm(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       console.error("Error while attempting to edit subcategory:", err);
@@ -204,153 +208,164 @@ export default function CreateSubCategory() {
     setFormData({ categoryId: "", name: "", status: "active" });
     setEditingId(null);
     setErrors({});
+    setShowForm(false);
   };
 
   return (
     <Layout title="Create Sub Category">
       <div className="space-y-8">
         {/* Form Section */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-md p-8">
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">
-            {editingId ? "Edit Sub Category" : "Add New Sub Category"}
-          </h2>
+        {showForm ? (
+          <div className="min-h-screen bg-white dark:bg-slate-800 rounded-2xl shadow-md p-8">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">
+              {editingId ? "Edit Sub Category" : "Add New Sub Category"}
+            </h2>
 
-          {message && (
-            <div
-              className={`mb-6 p-4 rounded-lg flex items-center gap-3 ${
-                messageType === "success"
-                  ? "bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800"
-                  : "bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800"
-              }`}
-            >
-              {messageType === "success" ? (
-                <Check className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
-              ) : (
-                <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0" />
-              )}
-              <span
-                className={
+            {message && (
+              <div
+                className={`mb-6 p-4 rounded-lg flex items-center gap-3 ${
                   messageType === "success"
-                    ? "text-green-700 dark:text-green-300"
-                    : "text-red-700 dark:text-red-300"
-                }
+                    ? "bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800"
+                    : "bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800"
+                }`}
               >
-                {message}
-              </span>
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Category Dropdown */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Select Category *
-              </label>
-              <select
-                value={formData.categoryId}
-                onChange={(e) =>
-                  setFormData({ ...formData, categoryId: e.target.value })
-                }
-                className={`w-full px-4 py-2.5 rounded-lg bg-white dark:bg-slate-700 border transition-all ${
-                  errors.categoryId
-                    ? "border-red-500 dark:border-red-400"
-                    : "border-slate-300 dark:border-slate-600"
-                } text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500`}
-              >
-                <option value="">Choose a category</option>
-                {(categories || []).map((cat) => (
-                  <option key={cat._id} value={cat._id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
-              {errors.categoryId && (
-                <p className="text-red-600 dark:text-red-400 text-sm mt-1">
-                  {errors.categoryId}
-                </p>
-              )}
-            </div>
-
-            {/* Sub Category Name */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Sub Category Name *
-              </label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                placeholder="Enter sub category name"
-                className={`w-full px-4 py-2.5 rounded-lg bg-white dark:bg-slate-700 border transition-all ${
-                  errors.name
-                    ? "border-red-500 dark:border-red-400"
-                    : "border-slate-300 dark:border-slate-600"
-                } text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500`}
-              />
-              {errors.name && (
-                <p className="text-red-600 dark:text-red-400 text-sm mt-1">
-                  {errors.name}
-                </p>
-              )}
-            </div>
-
-            {/* Status */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Status *
-              </label>
-              <select
-                value={formData.status}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    status: e.target.value as "active" | "inactive",
-                  })
-                }
-                className="w-full px-4 py-2.5 rounded-lg bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
-              >
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
-            </div>
-
-            {/* Buttons */}
-            <div className="form-actions pt-4">
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex-1 bg-teal-600 hover:bg-teal-700 disabled:bg-slate-400 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
-              >
-                {loading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Saving...</span>
-                  </>
+                {messageType === "success" ? (
+                  <Check className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
                 ) : (
-                  <>
-                    <Plus className="w-4 h-4" />
-                    <span>
-                      {editingId
-                        ? "Update Sub Category"
-                        : "Create Sub Category"}
-                    </span>
-                  </>
+                  <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0" />
                 )}
-              </button>
-              {editingId && (
-                <button
-                  type="button"
-                  onClick={handleCancel}
-                  className="px-6 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold py-2.5 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
+                <span
+                  className={
+                    messageType === "success"
+                      ? "text-green-700 dark:text-green-300"
+                      : "text-red-700 dark:text-red-300"
+                  }
                 >
-                  Cancel
+                  {message}
+                </span>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Category Dropdown */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Select Category *
+                </label>
+                <select
+                  value={formData.categoryId}
+                  onChange={(e) =>
+                    setFormData({ ...formData, categoryId: e.target.value })
+                  }
+                  className={`w-full px-4 py-2.5 rounded-lg bg-white dark:bg-slate-700 border transition-all ${
+                    errors.categoryId
+                      ? "border-red-500 dark:border-red-400"
+                      : "border-slate-300 dark:border-slate-600"
+                  } text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                >
+                  <option value="">Choose a category</option>
+                  {(categories || []).map((cat) => (
+                    <option key={cat._id} value={cat._id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+                {errors.categoryId && (
+                  <p className="text-red-600 dark:text-red-400 text-sm mt-1">
+                    {errors.categoryId}
+                  </p>
+                )}
+              </div>
+
+              {/* Sub Category Name */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Sub Category Name *
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  placeholder="Enter sub category name"
+                  className={`w-full px-4 py-2.5 rounded-lg bg-white dark:bg-slate-700 border transition-all ${
+                    errors.name
+                      ? "border-red-500 dark:border-red-400"
+                      : "border-slate-300 dark:border-slate-600"
+                  } text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                />
+                {errors.name && (
+                  <p className="text-red-600 dark:text-red-400 text-sm mt-1">
+                    {errors.name}
+                  </p>
+                )}
+              </div>
+
+              {/* Status */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Status *
+                </label>
+                <select
+                  value={formData.status}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      status: e.target.value as "active" | "inactive",
+                    })
+                  }
+                  className="w-full px-4 py-2.5 rounded-lg bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
+                >
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+
+              {/* Buttons */}
+              <div className="form-actions pt-4">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 bg-teal-600 hover:bg-teal-700 disabled:bg-slate-400 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4" />
+                      <span>
+                        {editingId
+                          ? "Update Sub Category"
+                          : "Create Sub Category"}
+                      </span>
+                    </>
+                  )}
                 </button>
-              )}
+                {editingId && (
+                  <button
+                    type="button"
+                    onClick={handleCancel}
+                    className="px-6 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold py-2.5 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
+            </form>
+            <div className="mt-4">
+              <button onClick={() => { handleCancel(); setShowForm(false); }} className="mt-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 rounded">Back to list</button>
             </div>
-          </form>
-        </div>
+          </div>
+        ) : (
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-md p-6 flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Sub Categories</h2>
+            <button onClick={() => setShowForm(true)} className="px-4 py-2 bg-teal-600 text-white rounded-lg">+ Add New Sub Category</button>
+          </div>
+        )}
 
         {/* Table Section */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-md overflow-hidden">
@@ -394,7 +409,7 @@ export default function CreateSubCategory() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                  {(subcategories || []).map((subcategory) => (
+                  {(subcategories || []).slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage).map((subcategory) => (
                     <tr
                       key={subcategory._id}
                       className="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
@@ -441,6 +456,13 @@ export default function CreateSubCategory() {
                   ))}
                 </tbody>
               </table>
+            </div>
+            <div className="p-4 flex items-center justify-end space-x-3">
+              <div className="text-sm text-slate-600">Showing {subcategories.length===0?0:Math.min((currentPage-1)*itemsPerPage+1, subcategories.length)}-{Math.min(currentPage*itemsPerPage, subcategories.length)} of {subcategories.length}</div>
+              <div className="flex items-center space-x-2">
+                <button onClick={() => setCurrentPage((p) => Math.max(1,p-1))} disabled={currentPage===1} className="px-3 py-1 bg-slate-100 rounded disabled:opacity-50">Prev</button>
+                <button onClick={() => setCurrentPage((p) => Math.min(p+1, Math.ceil(subcategories.length/itemsPerPage)))} disabled={currentPage>=Math.ceil(subcategories.length/itemsPerPage)} className="px-3 py-1 bg-slate-100 rounded disabled:opacity-50">Next</button>
+              </div>
             </div>
           )}
         </div>

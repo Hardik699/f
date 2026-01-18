@@ -19,6 +19,9 @@ export default function CreateUnit() {
   });
 
   const [units, setUnits] = useState<Unit[]>([]);
+  const [showForm, setShowForm] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const [loading, setLoading] = useState(false);
   const [tableLoading, setTableLoading] = useState(true);
   const [message, setMessage] = useState("");
@@ -102,11 +105,12 @@ export default function CreateUnit() {
         setFormData({ name: "", shortCode: "" });
         setEditingId(null);
         setErrors({});
-
+        // After saving, go back to list view and refresh
+        setShowForm(false);
         setTimeout(() => {
           fetchUnits();
           setMessage("");
-        }, 1500);
+        }, 500);
       } else {
         setMessageType("error");
         setMessage(data.message || "Operation failed");
@@ -126,6 +130,7 @@ export default function CreateUnit() {
       shortCode: unit.shortCode,
     });
     setEditingId(unit._id);
+    setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -161,13 +166,15 @@ export default function CreateUnit() {
     setFormData({ name: "", shortCode: "" });
     setEditingId(null);
     setErrors({});
+    setShowForm(false);
   };
 
   return (
     <Layout title="Create Unit">
       <div className="space-y-8">
         {/* Form Section */}
-        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-md p-8">
+        {showForm ? (
+          <div className="min-h-screen bg-white dark:bg-slate-800 rounded-2xl shadow-md p-8">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">
             {editingId ? "Edit Unit" : "Add New Unit"}
           </h2>
@@ -281,7 +288,28 @@ export default function CreateUnit() {
               )}
             </div>
           </form>
+          <div className="mt-4">
+            <button
+              onClick={() => {
+                handleCancel();
+              }}
+              className="mt-2 px-4 py-2 bg-slate-200 dark:bg-slate-700 rounded"
+            >
+              Back to list
+            </button>
+          </div>
         </div>
+        ) : (
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-md p-6 flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Units</h2>
+            <button
+              onClick={() => setShowForm(true)}
+              className="px-4 py-2 bg-teal-600 text-white rounded-lg"
+            >
+              + Add New Unit
+            </button>
+          </div>
+        )}
 
         {/* Table Section */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-md overflow-hidden">
@@ -322,7 +350,7 @@ export default function CreateUnit() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                  {units.map((unit) => (
+                  {units.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((unit) => (
                     <tr
                       key={unit._id}
                       className="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
@@ -358,6 +386,14 @@ export default function CreateUnit() {
                   ))}
                 </tbody>
               </table>
+            </div>
+            {/* Pagination */}
+            <div className="p-4 flex items-center justify-end space-x-3">
+              <div className="text-sm text-slate-600">Showing {units.length===0?0:Math.min((currentPage-1)*itemsPerPage+1, units.length)}-{Math.min(currentPage*itemsPerPage, units.length)} of {units.length}</div>
+              <div className="flex items-center space-x-2">
+                <button onClick={() => setCurrentPage((p) => Math.max(1, p-1))} disabled={currentPage===1} className="px-3 py-1 bg-slate-100 rounded disabled:opacity-50">Prev</button>
+                <button onClick={() => setCurrentPage((p) => Math.min(p+1, Math.ceil(units.length/itemsPerPage)))} disabled={currentPage>=Math.ceil(units.length/itemsPerPage)} className="px-3 py-1 bg-slate-100 rounded disabled:opacity-50">Next</button>
+              </div>
             </div>
           )}
         </div>
