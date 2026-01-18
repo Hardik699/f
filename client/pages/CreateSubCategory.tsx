@@ -387,81 +387,53 @@ export default function CreateSubCategory() {
               No sub categories found. Create one above!
             </div>
           ) : (
-            <div className="overflow-x-auto table-responsive">
-              <table className="w-full">
-                <thead className="bg-slate-100 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600">
+            {/* TABLE */}
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
+                <thead>
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      Category
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      Created By
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      Actions
-                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300">Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300">Category</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300">Actions</th>
                   </tr>
                 </thead>
+
                 <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                  {(subcategories || []).slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage).map((subcategory) => (
-                    <tr
-                      key={subcategory._id}
-                      className="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-                    >
-                      <td className="px-6 py-4 text-sm font-medium text-slate-900 dark:text-white">
-                        {subcategory.name}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
-                        {subcategory.categoryName}
-                      </td>
-                      <td className="px-6 py-4 text-sm">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                            subcategory.status === "active"
-                              ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
-                              : "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300"
-                          }`}
-                        >
-                          {subcategory.status
-                            ? subcategory.status.charAt(0).toUpperCase() + subcategory.status.slice(1)
-                            : "-"}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
-                        {subcategory.createdBy}
-                      </td>
-                      <td className="px-6 py-4 text-sm space-x-2">
-                        <button
-                          onClick={() => handleEdit(subcategory)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 bg-teal-100 dark:bg-teal-900 text-teal-700 dark:text-teal-300 rounded hover:bg-teal-200 dark:hover:bg-blue-800 transition-colors"
-                        >
-                          <Edit2 className="w-4 h-4" />
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(subcategory._id)}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded hover:bg-red-200 dark:hover:bg-red-800 transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {(subcategories || [])
+                    .slice(
+                      (currentPage - 1) * itemsPerPage,
+                      currentPage * itemsPerPage
+                    )
+                    .map((subcategory) => (
+                      <tr key={subcategory._id} className="hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                        <td className="px-6 py-4 text-sm font-medium text-slate-900 dark:text-white">{subcategory.name}</td>
+                        <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{subcategory.categoryName}</td>
+                        <td className="px-6 py-4 text-sm">
+                          <span className={`px-3 py-1 rounded-full text-xs font-semibold ${subcategory.status === "active" ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300" : "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300"}`}>
+                            {subcategory.status ? subcategory.status.charAt(0).toUpperCase() + subcategory.status.slice(1) : "-"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm space-x-2">
+                          <button onClick={() => handleEdit(subcategory)} className="inline-flex items-center gap-1 px-3 py-1.5 bg-teal-100 dark:bg-teal-900 text-teal-700 dark:text-teal-300 rounded hover:bg-teal-200 dark:hover:bg-blue-800 transition-colors"><Edit2 className="w-4 h-4" /> Edit</button>
+                          <button onClick={() => handleDelete(subcategory._id)} className="inline-flex items-center gap-1 px-3 py-1.5 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 rounded hover:bg-red-200 dark:hover:bg-red-800 transition-colors"><Trash2 className="w-4 h-4" /> Delete</button>
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
+
+            {/* PAGINATION */}
             <div className="p-4 flex items-center justify-end space-x-3">
-              <div className="text-sm text-slate-600">Showing {subcategories.length===0?0:Math.min((currentPage-1)*itemsPerPage+1, subcategories.length)}-{Math.min(currentPage*itemsPerPage, subcategories.length)} of {subcategories.length}</div>
+              <div className="text-sm text-slate-600">
+                Showing {subcategories.length === 0 ? 0 : Math.min((currentPage - 1) * itemsPerPage + 1, subcategories.length)}-
+                {Math.min(currentPage * itemsPerPage, subcategories.length)} of {subcategories.length}
+              </div>
+
               <div className="flex items-center space-x-2">
-                <button onClick={() => setCurrentPage((p) => Math.max(1,p-1))} disabled={currentPage===1} className="px-3 py-1 bg-slate-100 rounded disabled:opacity-50">Prev</button>
-                <button onClick={() => setCurrentPage((p) => Math.min(p+1, Math.ceil(subcategories.length/itemsPerPage)))} disabled={currentPage>=Math.ceil(subcategories.length/itemsPerPage)} className="px-3 py-1 bg-slate-100 rounded disabled:opacity-50">Next</button>
+                <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="px-3 py-1 bg-slate-100 rounded disabled:opacity-50">Prev</button>
+                <button onClick={() => setCurrentPage((p) => Math.min(Math.ceil(subcategories.length / itemsPerPage), p + 1))} disabled={currentPage >= Math.ceil(subcategories.length / itemsPerPage)} className="px-3 py-1 bg-slate-100 rounded disabled:opacity-50">Next</button>
               </div>
             </div>
           )}
